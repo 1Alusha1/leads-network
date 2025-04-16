@@ -1,8 +1,7 @@
 const express = require('express');
 const { google } = require('googleapis');
-const fs = require('fs');
-const path = require('path');
 const app = express();
+const format = require('date-format');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -40,7 +39,7 @@ app.get('/record', async (req, res) => {
     console.log('🔹 Запрос получен:', JSON.stringify(req.query));
 
     const decodedPayload = base64ToString(payload);
-    const [ip, advertisment, pixel, geo, time] = decodedPayload.split('&');
+    const [ip, advertisment, pixel, geo] = decodedPayload.split('&');
     const recordData = [];
 
     recordData.push(
@@ -51,7 +50,7 @@ app.get('/record', async (req, res) => {
       pixel,
       ip,
       geo,
-      time
+      format('dd-MM-yyyy, hh:mm')
     );
 
     appendToSheet(recordData);
