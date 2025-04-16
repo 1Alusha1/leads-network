@@ -39,14 +39,8 @@ app.get('/record', async (req, res) => {
     const { username, fullname, userId, payload, time } = req.query;
     console.log('🔹 Запрос получен:', JSON.stringify(req.query));
 
-    // EllisTech Antonio Тех 8119682966 213.111.64.252&хуй&55551331 1744124873
-    // const username = 'EllisTech';
-    // const fullname = 'Antonio Тех';
-    // const userId = 8119682966;
-    // const payload = 'MjEzLjExMS42NC4yNTIm0YXRg9C5JjU1NTUxMzMx';
-    // const time = 1744815691;
     const decodedPayload = base64ToString(payload);
-    const [ip, advertisment, pixel] = decodedPayload.split('&');
+    const [ip, advertisment, pixel, geo] = decodedPayload.split('&');
     const recordData = [];
 
     recordData.push(
@@ -56,7 +50,7 @@ app.get('/record', async (req, res) => {
       advertisment,
       pixel,
       ip,
-      '',
+      geo,
       time
     );
 
