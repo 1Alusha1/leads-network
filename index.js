@@ -36,11 +36,11 @@ function base64ToString(base64) {
 
 app.get('/record', async (req, res) => {
   try {
-    const { username, fullname, userId, payload, time } = req.query;
+    const { username, fullname, userId, payload } = req.query;
     console.log('🔹 Запрос получен:', JSON.stringify(req.query));
 
     const decodedPayload = base64ToString(payload);
-    const [ip, advertisment, pixel, geo] = decodedPayload.split('&');
+    const [ip, advertisment, pixel, geo, time] = decodedPayload.split('&');
     const recordData = [];
 
     recordData.push(
@@ -53,8 +53,6 @@ app.get('/record', async (req, res) => {
       geo,
       time
     );
-
-    console.log(recordData);
 
     appendToSheet(recordData);
     res.status(200).send('✅ Записано в таблицу');
