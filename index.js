@@ -8,7 +8,7 @@ dotenv.config();
 
 async function appendToSheet(data) {
   const auth = new google.auth.GoogleAuth({
-    credentials: process.env.GOOGLE_CRED,
+    credentials: JSON.parse(process.env.GOOGLE_CRED),
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
 
