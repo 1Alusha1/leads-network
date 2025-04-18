@@ -4,7 +4,12 @@ const app = express();
 const format = require('date-format');
 const dotenv = require('dotenv');
 dotenv.config();
+const mongoose = require('mongoose');
+const logModel = require('./models/log.model.js');
 
+dotenv.config();
+
+app.use(express.json());
 async function appendToSheet(data) {
   const auth = new google.auth.GoogleAuth({
     credentials: JSON.parse(process.env.GOOGLE_CRED),
@@ -33,9 +38,25 @@ function base64ToString(base64) {
   return decodeURIComponent(escape(atob(base64)));
 }
 
-app.get('/',(req,res)=>{
-  res.send('hello')
-})
+app.get('/', (req, res) => {
+  res.send('hello');
+});
+
+const saveLog = async (logData) => {
+  const log = await new logModel({ strLog: JSON.stringify(logData) });
+  log.save();
+  console.log('Логи сохранены');
+};
+
+app.post('/log', async (req, res) => {
+  try {
+    saveLog(req.body);
+    console.log('Логи сохранены');
+    res.send(200).status(200);
+  } catch (err) {
+    if (err) console.log(err);
+  }
+});
 
 app.get('/record', async (req, res) => {
   try {
@@ -64,6 +85,10 @@ app.get('/record', async (req, res) => {
     res.status(500).send('❌ Ошибка при записи');
   }
 });
+mongoose
+  .connect(process.env.MOGO_URI, {})
+  .then(() => console.log('MongoDB connected'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));
