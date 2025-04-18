@@ -50,7 +50,7 @@ const saveLog = async (logData) => {
 
 app.post('/log', async (req, res) => {
   try {
-    saveLog(req.body);
+    await saveLog(req.body);
     console.log('Логи сохранены');
     res.send(200).status(200);
   } catch (err) {
@@ -62,10 +62,14 @@ app.get('/record', async (req, res) => {
   try {
     const { username, fullname, userId, payload } = req.query;
     console.log('🔹 Запрос получен:', JSON.stringify(req.query));
-
+JSON.stringify
     const decodedPayload = base64ToString(payload);
     const [ip, advertisment, pixel, geo] = decodedPayload.split('&');
     const recordData = [];
+    await saveLog({
+      query: req.query,
+      decodedPayload,
+    });
 
     recordData.push(
       username,
