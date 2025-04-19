@@ -77,7 +77,6 @@ app.get('/record', async (req, res) => {
       fullname,
       userId,
       advertisment,
-      '',
       ip,
       geo,
       format('dd-MM-yyyy, hh:mm')
