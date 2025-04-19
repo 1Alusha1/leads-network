@@ -33,9 +33,9 @@ function base64ToString(base64) {
   return decodeURIComponent(escape(atob(base64)));
 }
 
-app.get('/', (req, res) => {
-  res.send('hello');
-});
+app.get('/',(req,res)=>{
+  res.send('hello')
+})
 
 app.get('/record', async (req, res) => {
   try {
