@@ -63,13 +63,13 @@ app.get('/record', async (req, res) => {
     const { username, fullname, userId, payload } = req.query;
     console.log('🔹 Запрос получен:', JSON.stringify(req.query));
 
-    const decodedPayload = base64ToString(payload);
-    const [ip, advertisment, pixel, geo] = decodedPayload.split('&');
+    // const decodedPayload = base64ToString(payload);
+    const [ip, advertisment, geo] = payload.split('-');
     const recordData = [];
     
     await saveLog({
       query: req.query,
-      decodedPayload,
+      payload,
     });
 
     recordData.push(
@@ -77,7 +77,7 @@ app.get('/record', async (req, res) => {
       fullname,
       userId,
       advertisment,
-      pixel,
+      '',
       ip,
       geo,
       format('dd-MM-yyyy, hh:mm')
