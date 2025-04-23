@@ -20,7 +20,7 @@ async function appendToSheet(data, sheet = "") {
   const sheets = google.sheets({ version: "v4", auth: client });
 
   const spreadsheetId = "1Fsknq-JhWjUy7RH6bTVPkdcXFbFldIZz2zbyesS6wc8";
-  const range = !sheet ? "leads!A:A" : `${sheet}!A:A`;
+  const range = !sheet ? "leads!A:F" : `${sheet}!A:A`;
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
