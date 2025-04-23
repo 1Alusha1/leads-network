@@ -10,7 +10,7 @@ const logModel = require("./models/log.model.js");
 dotenv.config();
 
 app.use(express.json());
-async function appendToSheet(data) {
+async function appendToSheet(data, sheet = "") {
   const auth = new google.auth.GoogleAuth({
     credentials: JSON.parse(process.env.GOOGLE_CRED),
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
@@ -20,7 +20,7 @@ async function appendToSheet(data) {
   const sheets = google.sheets({ version: "v4", auth: client });
 
   const spreadsheetId = "1Fsknq-JhWjUy7RH6bTVPkdcXFbFldIZz2zbyesS6wc8";
-  const range = "leads!A:A";
+  const range = !sheet ? "leads!A:A" : `${sheet}!A:A`;
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
@@ -32,10 +32,6 @@ async function appendToSheet(data) {
   });
 
   console.log("✅ Данные успешно добавлены!");
-}
-
-function base64ToString(base64) {
-  return decodeURIComponent(escape(atob(base64)));
 }
 
 app.get("/", (req, res) => {
@@ -60,10 +56,9 @@ app.post("/log", async (req, res) => {
 
 app.get("/record", async (req, res) => {
   try {
-    const { username, fullname, userId, payload } = req.query;
+    const { username, fullname, userId, payload, sheet } = req.query;
     console.log("🔹 Запрос получен:", JSON.stringify(req.query));
 
-    // const decodedPayload = base64ToString(payload);
     const [advertisment, geo] = payload.split("-");
     const recordData = [];
 
@@ -81,7 +76,7 @@ app.get("/record", async (req, res) => {
       format("dd-MM-yyyy, hh:mm")
     );
 
-    appendToSheet(recordData);
+    appendToSheet(recordData, sheet);
     res.status(200).send("✅ Записано в таблицу");
   } catch (err) {
     console.error("❌ Ошибка в маршруте:", err);
