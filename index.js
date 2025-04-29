@@ -64,10 +64,6 @@ app.get("/save-hash", (req, res) => {
   res.status(200).send("ok");
 });
 
-function safe(value) {
-  return (value === undefined || value === null || value === 'undefined') ? '' : value;
-}
-
 app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
   console.log(req.params);
   const { phone, sessionId, name } = req.params;
@@ -78,10 +74,10 @@ app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
 
   record.push(
     "WhatsApp",
-    safe(name),
-    safe(phone),
-    safe(data?.addSet),
-    safe(data?.geo),
+    name ? name : "-",
+    phone,
+    data.addSet ? data.addSet : "-",
+    data.geo,
     format("dd-MM-yyyy, hh:mm")
   );
 
