@@ -78,8 +78,8 @@ app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
 
   record.push(
     "WhatsApp",
-    safe(data?.name),
-    safe(data?.phone),
+    safe(name),
+    safe(phone),
     safe(data?.addSet),
     safe(data?.geo),
     format("dd-MM-yyyy, hh:mm")
