@@ -54,6 +54,38 @@ app.post("/log", async (req, res) => {
   }
 });
 
+const pendingData = new Map();
+
+app.get("/save-hash", (req, res) => {
+  const { advertisment, geo, sessionId } = req.query;
+
+  pendingData.set(sessionId, { addSet: advertisment, geo });
+  console.log(pendingData);
+  res.status(200).send("ok");
+});
+
+app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
+  console.log(req.params);
+  const { phone, sessionId, name } = req.params;
+
+  const session = sessionId;
+  const record = [];
+  const data = pendingData.get(session);
+
+  record.push(
+    "WhatsApp",
+    name ? name : "-",
+    phone,
+    data.addSet,
+    data.geo,
+    format("dd-MM-yyyy, hh:mm")
+  );
+
+  await appendToSheet(record);
+  pendingData.delete(session);
+  res.status(200).send("ok");
+});
+
 app.get("/record", async (req, res) => {
   try {
     const { username, fullname, userId, payload, sheet } = req.query;
