@@ -77,7 +77,7 @@ app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
     name ? name : "-",
     phone,
     data.addSet === undefined || data.addSet === null ? "-" : data.addSet,
-    data.geo === undefined || data.geo === null ? "-" : data.addSet,
+    data.geo === undefined || data.geo === null ? "-" : data.geo,
     format("dd-MM-yyyy, hh:mm")
   );
 
