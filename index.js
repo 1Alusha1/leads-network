@@ -58,7 +58,7 @@ const pendingData = new Map();
 
 app.get("/save-hash", (req, res) => {
   const { advertisment, geo, sessionId } = req.query;
-
+  console.log(req.query);
   pendingData.set(sessionId, { addSet: advertisment, geo });
   console.log(pendingData);
   res.status(200).send("ok");
@@ -76,8 +76,8 @@ app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
     "WhatsApp",
     name ? name : "-",
     phone,
-    data.addSet ? data.addSet : "-",
-    data.geo,
+    data.addSet === undefined || data.addSet === null ? "-" : data.addSet,
+    data.geo === undefined || data.geo === null ? "-" : data.addSet,
     format("dd-MM-yyyy, hh:mm")
   );
 
