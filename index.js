@@ -56,26 +56,6 @@ app.post("/log", async (req, res) => {
 
 const pendingData = new Map();
 
-app.get("/save-hash", (req, res) => {
-  const { advertisment, geo, sessionId } = req.query;
-  console.log(req.query);
-  pendingData.set(sessionId, { addSet: advertisment, geo });
-  sendLogToChat(
-    process.env.BOT_LOG_TOKEN,
-    "-1002534133157",
-    "/save-hash \n Сохранить в хеш таблицу при клице на ВЦ",
-    {
-      advertisment,
-      geo,
-      sessionId,
-      pendingData: Array.from(map),
-      time: format("dd-MM-yyyy, hh:mm"),
-    }
-  );
-  console.log(pendingData);
-  res.status(200).send("ok");
-});
-
 const sendLogToChat = async (token, chat_id, description, data) => {
   await fetch(
     `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${JSON.stringify(
@@ -94,39 +74,87 @@ const sendLogToChat = async (token, chat_id, description, data) => {
   );
 };
 
+app.get("/save-hash", (req, res) => {
+  try {
+    const { advertisment, geo, sessionId } = req.query;
+    pendingData.set(sessionId, { addSet: advertisment, geo });
+    sendLogToChat(
+      process.env.BOT_LOG_TOKEN,
+      "-1002534133157",
+      "/save-hash Сохранить в хеш таблицу при клице на ВЦ",
+      {
+        advertisment,
+        geo,
+        sessionId,
+        pendingData: Array.from(pendingData),
+        time: format("dd-MM-yyyy, hh:mm"),
+      }
+    );
+    res.status(200).send("ok");
+  } catch (err) {
+    console.error("❌ Ошибка в маршруте:", err);
+    sendLogToChat(
+      process.env.BOT_LOG_TOKEN,
+      "-1002688284609",
+      "/save-hash Сохранить в хеш таблицу при клице на ВЦ",
+      {
+        err,
+        message: err.message,
+        time: format("dd-MM-yyyy, hh:mm"),
+      }
+    );
+    res.status(500).send("❌ Ошибка при записи");
+  }
+});
+
 app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
-  console.log(req.params);
-  const { phone, sessionId, name } = req.params;
+  try {
+    console.log(req.params);
+    const { phone, sessionId, name } = req.params;
 
-  const session = sessionId;
-  const record = [];
-  const data = pendingData.get(session);
+    const session = sessionId;
+    const record = [];
+    const data = pendingData.get(session);
 
-  sendLogToChat(
-    process.env.BOT_LOG_TOKEN,
-    "-1002534133157",
-    `/compare-data \n сравнинеие и запись хеша, при отправке старт в ВЦ`,
-    {
+    sendLogToChat(
+      process.env.BOT_LOG_TOKEN,
+      "-1002534133157",
+      `/compare-data сравнинеие и запись хеша, при отправке старт в ВЦ`,
+      {
+        phone,
+        sessionId,
+        name,
+        data,
+        time: format("dd-MM-yyyy, hh:mm"),
+      }
+    );
+
+    record.push(
+      "WhatsApp",
+      name ? name : "-",
       phone,
-      sessionId,
-      name,
-      data,
-      time: format("dd-MM-yyyy, hh:mm"),
-    }
-  );
+      data.addSet === undefined || data.addSet === null ? "-" : data.addSet,
+      data.geo === undefined || data.geo === null ? "-" : data.geo,
+      format("dd-MM-yyyy, hh:mm")
+    );
 
-  record.push(
-    "WhatsApp",
-    name ? name : "-",
-    phone,
-    data.addSet === undefined || data.addSet === null ? "-" : data.addSet,
-    data.geo === undefined || data.geo === null ? "-" : data.geo,
-    format("dd-MM-yyyy, hh:mm")
-  );
-
-  await appendToSheet(record);
-  pendingData.delete(session);
-  res.status(200).send("ok");
+    await appendToSheet(record);
+    pendingData.delete(session);
+    res.status(200).send("ok");
+  } catch (err) {
+    sendLogToChat(
+      process.env.BOT_LOG_TOKEN,
+      "-1002688284609",
+      "/compare-data сравнинеие и запись хеша, при отправке старт в ВЦ",
+      {
+        err,
+        message: err.message,
+        time: format("dd-MM-yyyy, hh:mm"),
+      }
+    );
+    console.error("❌ Ошибка в маршруте:", err);
+    res.status(500).send("❌ Ошибка при записи");
+  }
 });
 
 app.get("/record", async (req, res) => {
@@ -145,7 +173,7 @@ app.get("/record", async (req, res) => {
     sendLogToChat(
       process.env.BOT_LOG_TOKEN,
       "-1002534133157",
-      "/record \n запись в таблицу с тг бота",
+      "/record запись в таблицу с тг бота",
       {
         username,
         fullname,
@@ -167,6 +195,16 @@ app.get("/record", async (req, res) => {
     appendToSheet(recordData, sheet);
     res.status(200).send("✅ Записано в таблицу");
   } catch (err) {
+    sendLogToChat(
+      process.env.BOT_LOG_TOKEN,
+      "-1002688284609",
+      "/record запись в таблицу с тг бота",
+      {
+        err,
+        message: err.message,
+        time: format("dd-MM-yyyy, hh:mm"),
+      }
+    );
     console.error("❌ Ошибка в маршруте:", err);
     res.status(500).send("❌ Ошибка при записи");
   }
