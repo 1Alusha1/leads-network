@@ -60,9 +60,39 @@ app.get("/save-hash", (req, res) => {
   const { advertisment, geo, sessionId } = req.query;
   console.log(req.query);
   pendingData.set(sessionId, { addSet: advertisment, geo });
+  sendLogToChat(
+    process.env.BOT_LOG_TOKEN,
+    "-1002534133157",
+    "/save-hash \n Сохранить в хеш таблицу при клице на ВЦ",
+    {
+      advertisment,
+      geo,
+      sessionId,
+      pendingData: Array.from(map),
+      time: format("dd-MM-yyyy, hh:mm"),
+    }
+  );
   console.log(pendingData);
   res.status(200).send("ok");
 });
+
+const sendLogToChat = async (token, chat_id, description, data) => {
+  await fetch(
+    `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${JSON.stringify(
+      {
+        description,
+        ...data,
+      }
+    )}
+    `,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+    }
+  );
+};
 
 app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
   console.log(req.params);
@@ -71,6 +101,19 @@ app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
   const session = sessionId;
   const record = [];
   const data = pendingData.get(session);
+
+  sendLogToChat(
+    process.env.BOT_LOG_TOKEN,
+    "-1002534133157",
+    `/compare-data \n сравнинеие и запись хеша, при отправке старт в ВЦ`,
+    {
+      phone,
+      sessionId,
+      name,
+      data,
+      time: format("dd-MM-yyyy, hh:mm"),
+    }
+  );
 
   record.push(
     "WhatsApp",
@@ -99,6 +142,19 @@ app.get("/record", async (req, res) => {
       payload,
     });
 
+    sendLogToChat(
+      process.env.BOT_LOG_TOKEN,
+      "-1002534133157",
+      "/record \n запись в таблицу с тг бота",
+      {
+        username,
+        fullname,
+        userId,
+        payload,
+        sheet,
+        time: format("dd-MM-yyyy, hh:mm"),
+      }
+    );
     recordData.push(
       username,
       fullname,
