@@ -129,16 +129,17 @@ app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
           time: format("dd-MM-yyyy, hh:mm"),
         }
       );
+      
       record.push(
         "WhatsApp",
         name ? name : "-",
         phone,
-        '-',
-        '',
+        "-",
+        "-",
         format("dd-MM-yyyy, hh:mm")
       );
-      res.status(200).send('ok');
       await appendToSheet(record);
+      return res.status(200).send("ok");
     }
 
     sendLogToChat(
