@@ -116,6 +116,7 @@ app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
     const record = [];
     const data = pendingData.get(session);
 
+    console.log(data)
     if (!data) {
       sendLogToChat(
         process.env.BOT_LOG_TOKEN,
@@ -129,7 +130,7 @@ app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
           time: format("dd-MM-yyyy, hh:mm"),
         }
       );
-      
+
       record.push(
         "WhatsApp",
         name ? name : "-",
