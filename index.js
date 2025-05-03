@@ -107,16 +107,15 @@ app.get("/save-hash", (req, res) => {
   }
 });
 
-app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
+app.get("/compare-data", async (req, res) => {
   try {
     console.log(req.params);
-    const { phone, sessionId, name } = req.params;
+    const { phone, sessionId, name } = req.query;
 
     const session = sessionId;
     const record = [];
     const data = pendingData.get(session);
 
-    console.log(data)
     if (!data) {
       sendLogToChat(
         process.env.BOT_LOG_TOKEN,
