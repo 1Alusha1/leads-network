@@ -116,6 +116,31 @@ app.get("/compare-data/:phone/:sessionId/:name", async (req, res) => {
     const record = [];
     const data = pendingData.get(session);
 
+    if (!data) {
+      sendLogToChat(
+        process.env.BOT_LOG_TOKEN,
+        "-1002534133157",
+        `/compare-data не отправил стартовое сообщение utm - неизвестен`,
+        {
+          phone,
+          sessionId,
+          name,
+          data,
+          time: format("dd-MM-yyyy, hh:mm"),
+        }
+      );
+      record.push(
+        "WhatsApp",
+        name ? name : "-",
+        phone,
+        '-',
+        '',
+        format("dd-MM-yyyy, hh:mm")
+      );
+      res.status(200).send('ok');
+      await appendToSheet(record);
+    }
+
     sendLogToChat(
       process.env.BOT_LOG_TOKEN,
       "-1002534133157",
