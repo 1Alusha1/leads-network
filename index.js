@@ -135,16 +135,19 @@ app.get("/compare-data", async (req, res) => {
       );
       return res.status(200).send("ok");
     }
+    
+    const record = [];
+
+    // проверяем существует ли хеш
+    const hash = await hashModel.findOne({ sessionId });
+
     // сохраняем юзера, если он не дубль и есть хэш
     await new waUserModel({
       phone,
       name,
       geo: hash.geo,
     }).save();
-    const record = [];
-
-    // проверяем существует ли хеш
-    const hash = await hashModel.findOne({ sessionId });
+    
     if (!hash) {
       sendLogToChat(
         process.env.BOT_LOG_TOKEN,
