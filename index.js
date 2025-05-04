@@ -135,7 +135,12 @@ app.get("/compare-data", async (req, res) => {
       );
       return res.status(200).send("ok");
     }
-
+    // сохраняем юзера, если он не дубль и есть хэш
+    await new waUserModel({
+      phone,
+      name,
+      geo: hash.geo,
+    }).save();
     const record = [];
 
     // проверяем существует ли хеш
@@ -165,13 +170,6 @@ app.get("/compare-data", async (req, res) => {
       await appendToSheet(record);
       return res.status(200).send("ok");
     }
-
-    // сохраняем юзера, если он не дубль и есть хэш
-    await new waUserModel({
-      phone,
-      name,
-      geo: hash.geo,
-    }).save();
 
     sendLogToChat(
       process.env.BOT_LOG_TOKEN,
