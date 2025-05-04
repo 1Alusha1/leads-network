@@ -6,6 +6,9 @@ const dotenv = require("dotenv");
 dotenv.config();
 const mongoose = require("mongoose");
 const logModel = require("./models/log.model.js");
+const hashModel = require("./models/hash.model.js");
+const waUserModel = require("./models/wauser.model.js");
+const tgUserModel = require("./models/tguser.model.js");
 
 dotenv.config();
 
@@ -54,8 +57,6 @@ app.post("/log", async (req, res) => {
   }
 });
 
-const pendingData = new Map();
-
 const sendLogToChat = async (token, chat_id, description, data) => {
   await fetch(
     `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${JSON.stringify(
@@ -74,10 +75,17 @@ const sendLogToChat = async (token, chat_id, description, data) => {
   );
 };
 
-app.get("/save-hash", (req, res) => {
+app.get("/save-hash", async (req, res) => {
   try {
     const { advertisment, geo, sessionId } = req.query;
-    pendingData.set(sessionId, { addSet: advertisment, geo });
+
+    // тут сохраняем в бд, что бы сессии не терялись
+    await new hashModel({
+      sessionId,
+      addSet: advertisment,
+      geo,
+    }).save();
+
     sendLogToChat(
       process.env.BOT_LOG_TOKEN,
       "-1002534133157",
@@ -86,7 +94,6 @@ app.get("/save-hash", (req, res) => {
         advertisment,
         geo,
         sessionId,
-        pendingData: Array.from(pendingData),
         time: format("dd-MM-yyyy, hh:mm"),
       }
     );
@@ -109,14 +116,31 @@ app.get("/save-hash", (req, res) => {
 
 app.get("/compare-data", async (req, res) => {
   try {
-    console.log(req.params);
+    console.log(req.query);
     const { phone, sessionId, name } = req.query;
 
-    const session = sessionId;
-    const record = [];
-    const data = pendingData.get(session);
+    // тут проверяем есть ли такой тип в бд;
+    const wauser = await waUserModel.findOne({ phone });
+    if (wauser) {
+      sendLogToChat(
+        process.env.BOT_LOG_TOKEN,
+        "-1002534133157",
+        `/compare-data WhatsApp Дубль. не записан в таблицу`,
+        {
+          phone,
+          sessionId,
+          name,
+          time: format("dd-MM-yyyy, hh:mm"),
+        }
+      );
+      return res.status(200).send("ok");
+    }
 
-    if (!data) {
+    const record = [];
+
+    // проверяем существует ли хеш
+    const hash = await hashModel.findOne({ sessionId });
+    if (!hash) {
       sendLogToChat(
         process.env.BOT_LOG_TOKEN,
         "-1002534133157",
@@ -125,7 +149,7 @@ app.get("/compare-data", async (req, res) => {
           phone,
           sessionId,
           name,
-          data,
+          hash,
           time: format("dd-MM-yyyy, hh:mm"),
         }
       );
@@ -142,15 +166,22 @@ app.get("/compare-data", async (req, res) => {
       return res.status(200).send("ok");
     }
 
+    // сохраняем юзера, если он не дубль и есть хэш
+    await new waUserModel({
+      phone,
+      name,
+      geo: hash.geo,
+    }).save();
+
     sendLogToChat(
       process.env.BOT_LOG_TOKEN,
       "-1002534133157",
-      `/compare-data сравнинеие и запись хеша, при отправке старт в ВЦ`,
+      `/compare-data Пользователь записан`,
       {
         phone,
         sessionId,
         name,
-        data,
+        hash,
         time: format("dd-MM-yyyy, hh:mm"),
       }
     );
@@ -159,13 +190,12 @@ app.get("/compare-data", async (req, res) => {
       "WhatsApp",
       name ? name : "-",
       phone,
-      data.addSet === undefined || data.addSet === null ? "-" : data.addSet,
-      data.geo === undefined || data.geo === null ? "-" : data.geo,
+      hash.addSet === undefined || hash.addSet === null ? "-" : hash.addSet,
+      hash.geo === undefined || hash.geo === null ? "-" : hash.geo,
       format("dd-MM-yyyy, hh:mm")
     );
 
     await appendToSheet(record);
-    pendingData.delete(session);
     res.status(200).send("ok");
   } catch (err) {
     sendLogToChat(
@@ -188,13 +218,34 @@ app.get("/record", async (req, res) => {
     const { username, fullname, userId, payload, sheet } = req.query;
     console.log("🔹 Запрос получен:", JSON.stringify(req.query));
 
+    // Проверяем есть ли запись в бд
+    const tguser = await tgUserModel.findOne({ userId });
+    if (tguser) {
+      sendLogToChat(
+        process.env.BOT_LOG_TOKEN,
+        "-1002534133157",
+        "/record Telegram Дубль. не записан в таблицу",
+        {
+          username,
+          fullname,
+          userId,
+          payload,
+          sheet,
+          time: format("dd-MM-yyyy, hh:mm"),
+        }
+      );
+      return res.status(200).send("Не записан в таблицу");
+    }
+
+    // если нет в бд, записываем в таблицу как нового юзера
     const [advertisment, geo] = payload.split("-");
     const recordData = [];
 
-    await saveLog({
-      query: req.query,
-      payload,
-    });
+    await tgUserModel({
+      username,
+      userId,
+      geo,
+    }).save();
 
     sendLogToChat(
       process.env.BOT_LOG_TOKEN,
@@ -224,7 +275,7 @@ app.get("/record", async (req, res) => {
     sendLogToChat(
       process.env.BOT_LOG_TOKEN,
       "-1002688284609",
-      "/record запись в таблицу с тг бота",
+      "/record Ошибка записи в таблицу с тг бота",
       {
         err,
         message: err.message,
@@ -235,6 +286,7 @@ app.get("/record", async (req, res) => {
     res.status(500).send("❌ Ошибка при записи");
   }
 });
+
 mongoose
   .connect(process.env.MOGO_URI, {})
   .then(() => console.log("MongoDB connected"))
