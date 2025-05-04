@@ -135,7 +135,7 @@ app.get("/compare-data", async (req, res) => {
       );
       return res.status(200).send("ok");
     }
-    
+
     const record = [];
 
     // проверяем существует ли хеш
@@ -145,9 +145,9 @@ app.get("/compare-data", async (req, res) => {
     await new waUserModel({
       phone,
       name,
-      geo: hash.geo,
+      geo: hash ? hash.geo : "",
     }).save();
-    
+
     if (!hash) {
       sendLogToChat(
         process.env.BOT_LOG_TOKEN,
