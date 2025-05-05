@@ -1,4 +1,5 @@
 const express = require("express");
+const { google } = require("googleapis");
 const app = express();
 const format = require("date-format");
 const dotenv = require("dotenv");
@@ -8,13 +9,33 @@ const logModel = require("./models/log.model.js");
 const hashModel = require("./models/hash.model.js");
 const waUserModel = require("./models/wauser.model.js");
 const tgUserModel = require("./models/tguser.model.js");
-const notificatonSender = require("./utils/notificatonSender.js");
-const sendLogToChat = require("./utils/sendLogToChat.js");
-const appendToSheet = require("./utils/appendToSheet.js");
 
+dotenv.config();
 
 app.use(express.json());
+async function appendToSheet(data, sheet = "") {
+  const auth = new google.auth.GoogleAuth({
+    credentials: JSON.parse(process.env.GOOGLE_CRED),
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  });
 
+  const client = await auth.getClient();
+  const sheets = google.sheets({ version: "v4", auth: client });
+
+  const spreadsheetId = "11d5Iojvl_5NeFdrdmsQkC0N33_6CmiAI8xWJ7hGAUOI";
+  const range = !sheet ? "leads!A:F" : `${sheet}!A:F`;
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [data],
+    },
+  });
+
+  console.log("✅ Данные успешно добавлены!");
+}
 
 app.get("/", (req, res) => {
   res.send("hello");
@@ -36,6 +57,23 @@ app.post("/log", async (req, res) => {
   }
 });
 
+const sendLogToChat = async (token, chat_id, description, data) => {
+  await fetch(
+    `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${JSON.stringify(
+      {
+        description,
+        ...data,
+      }
+    )}
+    `,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+    }
+  );
+};
 
 app.get("/save-hash", async (req, res) => {
   try {
@@ -149,9 +187,6 @@ app.get("/compare-data", async (req, res) => {
       }
     );
 
-    // отправить сообщение о новом лиде, конкретному человеку
-    notificatonSender(process.env.BOT_LOG_TOKEN,hash.addSet, "WhatsApp: упал лид, смотри в листе Leads");
-
     record.push(
       "WhatsApp",
       name ? name : "-",
@@ -162,7 +197,6 @@ app.get("/compare-data", async (req, res) => {
     );
 
     await appendToSheet(record);
-    await hashModel.findOneAndDelete({sessionId})
     res.status(200).send("ok");
   } catch (err) {
     sendLogToChat(
@@ -226,12 +260,6 @@ app.get("/record", async (req, res) => {
         sheet,
         time: format("dd-MM-yyyy, hh:mm"),
       }
-    );
-    // отправить сообщение о новом лиде, конкретному человеку
-    notificatonSender(
-      process.env.BOT_LOG_TOKEN,
-      advertisment,
-      "Telegram: упал лид, смотри в листе aff"
     );
     recordData.push(
       username,
