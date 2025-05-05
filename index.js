@@ -12,6 +12,26 @@ const tgUserModel = require("./models/tguser.model.js");
 
 dotenv.config();
 
+const notificatonSender = async (
+  token,
+  addSet,
+  text,
+  chat_id = -4662139699
+) => {
+  const adsets = ["aff_Victoria2", "aff_Victoria22", "aff_Victoria3"];
+  if (adsets.includes(addSet)) {
+    await fetch(
+      `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${text}`,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+      }
+    );
+  }
+};
+
 app.use(express.json());
 async function appendToSheet(data, sheet = "") {
   const auth = new google.auth.GoogleAuth({
@@ -196,6 +216,12 @@ app.get("/compare-data", async (req, res) => {
       format("dd-MM-yyyy, hh:mm")
     );
 
+    // отправить сообщение о новом лиде, конкретному человеку
+    notificatonSender(
+      process.env.BOT_LOG_TOKEN,
+      hash.addSet,
+      "WhatsApp: упал лид, смотри в листе Leads"
+    );
     await appendToSheet(record);
     res.status(200).send("ok");
   } catch (err) {
@@ -260,6 +286,13 @@ app.get("/record", async (req, res) => {
         sheet,
         time: format("dd-MM-yyyy, hh:mm"),
       }
+    );
+
+    // отправить сообщение о новом лиде, конкретному человеку
+    notificatonSender(
+      process.env.BOT_LOG_TOKEN,
+      advertisment,
+      "Telegram: упал лид, смотри в листе aff"
     );
     recordData.push(
       username,
