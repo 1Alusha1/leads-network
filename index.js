@@ -11,6 +11,7 @@ const waUserModel = require("./models/wauser.model.js");
 const tgUserModel = require("./models/tguser.model.js");
 const notificatonSender = require("./utils/notificatonSender.js");
 const sendLogToChat = require("./utils/sendLogToChat.js");
+const appendToSheet = require("./utils/appendToSheet.js");
 
 
 app.use(express.json());
