@@ -1,3 +1,5 @@
+import { google } from "googleapis";
+
 export default async (data, sheet, tableId) => {
   const auth = new google.auth.GoogleAuth({
     credentials: JSON.parse(process.env.GOOGLE_CRED),
