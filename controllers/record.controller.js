@@ -108,7 +108,7 @@ export const compareData = async (req, res) => {
         "-",
         format("dd-MM-yyyy, hh:mm")
       );
-      await appendToSheet(record, sheet, tableId);
+      await appendToSheet(record, 'leads', '11d5Iojvl_5NeFdrdmsQkC0N33_6CmiAI8xWJ7hGAUOI');
       return res.status(200).send("ok");
     }
 
