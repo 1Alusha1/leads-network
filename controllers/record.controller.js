@@ -56,7 +56,7 @@ export const compareData = async (req, res) => {
     const { phone, sessionId, name } = req.query;
 
     // тут проверяем есть ли такой тип в бд;
-    const wauser = await wauserModel.findOne({ phone });
+    const wauser = await waUserModel.findOne({ phone });
     if (wauser) {
       sendLogToChat(
         process.env.BOT_LOG_TOKEN,
@@ -164,7 +164,7 @@ export const record = async (req, res) => {
     console.log("🔹 Запрос получен:", JSON.stringify(req.query));
 
     // Проверяем есть ли запись в бд
-    const tguser = await tguserModel.findOne({ userId });
+    const tguser = await tgUserModel.findOne({ userId });
     if (tguser) {
       sendLogToChat(
         process.env.BOT_LOG_TOKEN,
