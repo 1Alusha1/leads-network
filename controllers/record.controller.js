@@ -5,7 +5,7 @@ import appendToSheet from "../utils/appendToSheet.js";
 import notificationSender from "../utils/notificationSender.js";
 import sendLogToChat from "../utils/sendLogToChat.js";
 import dotenv from "dotenv";
-const format = (await import('date-format')).default;
+const format = (await import("date-format")).default;
 
 dotenv.config();
 
@@ -108,7 +108,7 @@ export const compareData = async (req, res) => {
         "-",
         format("dd-MM-yyyy, hh:mm")
       );
-      await appendToSheet(record);
+      await appendToSheet(record, sheet, tableId);
       return res.status(200).send("ok");
     }
 

@@ -6,7 +6,8 @@ const HashSchema = new Schema({
   sessionId: String,
   addSet: String,
   geo: String,
+  sheet: String,
+  tableId: String,
 });
 
-
-export default mongoose.model("Hash", HashSchema)
+export default mongoose.model("Hash", HashSchema);
