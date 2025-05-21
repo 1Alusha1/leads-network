@@ -56,21 +56,21 @@ export const compareData = async (req, res) => {
     const { phone, sessionId, name } = req.query;
 
     // тут проверяем есть ли такой тип в бд;
-    // const wauser = await wauserModel.findOne({ phone });
-    // if (wauser) {
-    //   sendLogToChat(
-    //     process.env.BOT_LOG_TOKEN,
-    //     "-1002534133157",
-    //     `/compare-data WhatsApp Дубль. не записан в таблицу`,
-    //     {
-    //       phone,
-    //       sessionId,
-    //       name,
-    //       time: format("dd-MM-yyyy, hh:mm"),
-    //     }
-    //   );
-    //   return res.status(200).send("ok");
-    // }
+    const wauser = await wauserModel.findOne({ phone });
+    if (wauser) {
+      sendLogToChat(
+        process.env.BOT_LOG_TOKEN,
+        "-1002534133157",
+        `/compare-data WhatsApp Дубль. не записан в таблицу`,
+        {
+          phone,
+          sessionId,
+          name,
+          time: format("dd-MM-yyyy, hh:mm"),
+        }
+      );
+      return res.status(200).send("ok");
+    }
 
     const record = [];
 
@@ -78,13 +78,13 @@ export const compareData = async (req, res) => {
     const hash = await hashModel.findOne({ sessionId });
 
     // сохраняем юзера, если он не дубль и есть хэш
-    // await new waUserModel({
-    //   phone,
-    //   name,
-    //   geo: hash ? hash.geo : "",
-    //   sheet: hash.sheet,
-    //   tableId: hash.tableId,
-    // }).save();
+    await new waUserModel({
+      phone,
+      name,
+      geo: hash ? hash.geo : "",
+      sheet: hash.sheet,
+      tableId: hash.tableId,
+    }).save();
 
     if (!hash) {
       sendLogToChat(
@@ -164,33 +164,33 @@ export const record = async (req, res) => {
     console.log("🔹 Запрос получен:", JSON.stringify(req.query));
 
     // Проверяем есть ли запись в бд
-    // const tguser = await tguserModel.findOne({ userId });
-    // if (tguser) {
-    //   sendLogToChat(
-    //     process.env.BOT_LOG_TOKEN,
-    //     "-1002534133157",
-    //     "/record Telegram Дубль. не записан в таблицу",
-    //     {
-    //       username,
-    //       fullname,
-    //       userId,
-    //       payload,
-    //       sheet,
-    //       time: format("dd-MM-yyyy, hh:mm"),
-    //     }
-    //   );
-    //   return res.status(200).send("Не записан в таблицу");
-    // }
+    const tguser = await tguserModel.findOne({ userId });
+    if (tguser) {
+      sendLogToChat(
+        process.env.BOT_LOG_TOKEN,
+        "-1002534133157",
+        "/record Telegram Дубль. не записан в таблицу",
+        {
+          username,
+          fullname,
+          userId,
+          payload,
+          sheet,
+          time: format("dd-MM-yyyy, hh:mm"),
+        }
+      );
+      return res.status(200).send("Не записан в таблицу");
+    }
 
     // если нет в бд, записываем в таблицу как нового юзера
     const [advertisment, geo] = payload.split("-");
     const recordData = [];
 
-    // await tgUserModel({
-    //   username,
-    //   userId,
-    //   geo,
-    // }).save();
+    await tgUserModel({
+      username,
+      userId,
+      geo,
+    }).save();
 
     sendLogToChat(
       process.env.BOT_LOG_TOKEN,
