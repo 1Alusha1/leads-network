@@ -207,7 +207,7 @@ export const record = async (req, res) => {
     );
 
     // отправить сообщение о новом лиде, конкретному человеку
-    notificatonSender(
+    notificationSender(
       process.env.BOT_LOG_TOKEN,
       advertisment,
       "Telegram: упал лид, смотри в листе aff"
