@@ -1,10 +1,12 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const Schema = mongoose.Schema;
+const { Schema } = mongoose;
+
 const HashSchema = new Schema({
   sessionId: String,
   addSet: String,
   geo: String,
 });
 
-module.exports = mongoose.model("Hash", HashSchema);
+
+export default mongoose.model("Hash", HashSchema)

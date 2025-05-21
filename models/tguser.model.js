@@ -1,10 +1,11 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const Schema = mongoose.Schema;
+const { Schema } = mongoose;
+
 const TGUserSchema = new Schema({
   username: String,
   userId: String,
   geo: String,
 });
 
-module.exports = mongoose.model("TGUser", TGUserSchema);
+export default mongoose.model("TGUser", TGUserSchema);
