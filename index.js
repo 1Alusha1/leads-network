@@ -2,11 +2,14 @@ import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import recordRoute from "./routes/record.route.js";
+import fbRoute from "./routes/fb.route.js";
 
 dotenv.config();
 const app = express();
 app.use(express.json());
+
 app.use("/", recordRoute);
+app.use("/fb", fbRoute);
 
 app.get("/", (req, res) => {
   res.send("hello");
