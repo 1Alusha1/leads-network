@@ -173,7 +173,7 @@ export const record = async (req, res) => {
     console.log("🔹 Запрос получен:", JSON.stringify(req.query));
 
     // // Проверяем есть ли запись в бд
-    const tguser = await tguserModel.findOne({ userId });
+    const tguser = await tgUserModel.findOne({ userId });
     if (tguser) {
       sendLogToChat(
         process.env.BOT_LOG_TOKEN,
