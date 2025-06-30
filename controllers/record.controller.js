@@ -11,7 +11,9 @@ dotenv.config();
 
 export const saveHash = async (req, res) => {
   try {
-    const { advertisment, geo, sessionId, sheet, tableId } = req.query;
+    const { advertisment, geo, sessionId, sheet, tableId, chatId } = req.query;
+
+    console.log(req.query);
 
     // тут сохраняем в бд, что бы сессии не терялись
     await new hashModel({
@@ -20,6 +22,7 @@ export const saveHash = async (req, res) => {
       geo,
       sheet,
       tableId,
+      chatId: chatId ? chatId : " ",
     }).save();
 
     sendLogToChat(
@@ -82,8 +85,6 @@ export const compareData = async (req, res) => {
       phone,
       name,
       geo: hash ? hash.geo : "",
-      sheet: hash.sheet,
-      tableId: hash.tableId,
     }).save();
 
     if (!hash) {
@@ -108,9 +109,15 @@ export const compareData = async (req, res) => {
         "-",
         format("dd-MM-yyyy, hh:mm")
       );
-      await appendToSheet(record, 'leads', '11d5Iojvl_5NeFdrdmsQkC0N33_6CmiAI8xWJ7hGAUOI');
+      await appendToSheet(
+        record,
+        "leads",
+        "11d5Iojvl_5NeFdrdmsQkC0N33_6CmiAI8xWJ7hGAUOI"
+      );
       return res.status(200).send("ok");
     }
+
+    console.log(hash);
 
     sendLogToChat(
       process.env.BOT_LOG_TOKEN,
@@ -137,9 +144,10 @@ export const compareData = async (req, res) => {
     // отправить сообщение о новом лиде, конкретному человеку
     notificationSender(
       process.env.BOT_LOG_TOKEN,
-      hash.addSet,
-      "WhatsApp: упал лид, смотри в листе Leads"
+      `WhatsApp: упал лид, номер: ${phone}`,
+      hash.chatId ? hash.chatId : ""
     );
+
     await appendToSheet(record, hash.sheet, hash.tableId);
     res.status(200).send("ok");
   } catch (err) {
@@ -160,11 +168,12 @@ export const compareData = async (req, res) => {
 
 export const record = async (req, res) => {
   try {
-    const { username, fullname, userId, payload, sheet, tableId } = req.query;
+    const { username, fullname, userId, payload, sheet, tableId, chatId } =
+      req.query;
     console.log("🔹 Запрос получен:", JSON.stringify(req.query));
 
-    // Проверяем есть ли запись в бд
-    const tguser = await tgUserModel.findOne({ userId });
+    // // Проверяем есть ли запись в бд
+    const tguser = await tguserModel.findOne({ userId });
     if (tguser) {
       sendLogToChat(
         process.env.BOT_LOG_TOKEN,
@@ -207,11 +216,14 @@ export const record = async (req, res) => {
     );
 
     // отправить сообщение о новом лиде, конкретному человеку
-    notificationSender(
-      process.env.BOT_LOG_TOKEN,
-      advertisment,
-      "Telegram: упал лид, смотри в листе aff"
-    );
+    if (chatId) {
+      notificationSender(
+        process.env.BOT_LOG_TOKEN,
+        `Telegram: упал лид \n Имя пользователя: @${username} \n Полное имя: ${fullname} \n Id: ${userId} \n Гео: ${geo}`,
+        chatId
+      );
+    }
+
     recordData.push(
       username,
       fullname,

@@ -8,6 +8,7 @@ const HashSchema = new Schema({
   geo: String,
   sheet: String,
   tableId: String,
+  chatId: String,
 });
 
 export default mongoose.model("Hash", HashSchema);
