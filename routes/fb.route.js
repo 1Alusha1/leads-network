@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { validationHook } from "../controllers/fb.controller";
+import { sendDataToCRM, validationHook } from "../controllers/fb.controller";
 
 const router = Router();
 
