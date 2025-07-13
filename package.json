@@ -11,11 +11,14 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "cors": "^2.8.5",
     "date-format": "^4.0.14",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "express-fileupload": "^1.5.2",
     "googleapis": "^148.0.0",
-    "mongoose": "^8.13.2"
+    "mongoose": "^8.13.2",
+    "xlsx": "^0.18.5"
   },
   "type": "module",
   "devDependencies": {
