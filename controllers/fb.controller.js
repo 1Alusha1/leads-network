@@ -40,6 +40,8 @@ export const sendDataToCRM = (req, res) => {
 export const getLongLivedToken = async (req, res) => {
   const { fb_token, authToken } = req.body;
 
+  console.log(process.env.APP_ID, process.env.FB_CLIENT_SECRET);
+
   try {
     const params = new URLSearchParams({
       grant_type: "fb_exchange_token",
@@ -60,14 +62,13 @@ export const getLongLivedToken = async (req, res) => {
         .json({ message: data.error.message, type: "error" });
     }
 
-
     if (data.access_token) {
       userModel.findOne({ authToken }, { fb_token }, { new: true });
     }
 
     return res.status(200).json(data);
   } catch (err) {
-    console.log(err)
+    console.log(err);
     res.status(500).json({ message: err.message, type: "error" });
   }
 };
