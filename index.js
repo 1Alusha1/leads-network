@@ -5,6 +5,7 @@ import recordRoute from "./routes/record.route.js";
 import fbRoute from "./routes/fb.route.js";
 import ttRoute from "./routes/tt.route.js";
 import ktRoute from "./routes/kt.route.js";
+import userRoute from "./routes/user.route.js";
 import fileUpload from "express-fileupload";
 import cors from "cors";
 
@@ -23,6 +24,7 @@ app.use("/", recordRoute);
 app.use("/fb", fbRoute);
 app.use("/tt", ttRoute);
 app.use("/kt", ktRoute);
+app.use("/user", userRoute);
 
 app.get("/", (req, res) => {
   res.send("hello");
