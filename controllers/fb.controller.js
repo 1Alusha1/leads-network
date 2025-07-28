@@ -44,7 +44,7 @@ export const getLongLivedToken = async (req, res) => {
     const params = new URLSearchParams({
       grant_type: "fb_exchange_token",
       client_id: process.env.APP_ID,
-      client_secret: process.env.FB_HOOK_TOKEN,
+      client_secret: process.env.FB_CLIENT_SECRET,
       fb_exchange_token: fb_token,
     });
 
