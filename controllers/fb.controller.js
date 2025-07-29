@@ -1,7 +1,8 @@
 import dotenv from "dotenv";
 import { fbLeadsTarget } from "../utils/parseLead.js";
 import userModel from "../models/user.model.js";
-import jwt from "jsonwebtoken";
+import leadFormTemplateModel from "../models/leadFormTemplate.model.js";
+import appendToSheet from "../utils/appendToSheet.js";
 dotenv.config();
 
 export const validationHook = (req, res) => {
@@ -20,27 +21,49 @@ export const validationHook = (req, res) => {
 export const sendDataToCRM = (req, res) => {
   const { entry } = req.body;
 
-  console.log(
-    "📥 Получено сообщение от Facebook:",
-    JSON.stringify(req.body, null, 2)
-  );
-
   entry.forEach(async (lead) => {
-    const response = await fetch(
-      `https://graph.facebook.com/v19.0/${lead.changes[0].value.leadgen_id}?access_token=EAAZAi6xZBiVCcBPNzZC54oJkHI5oMtRZBFKiejAQ0YIRfchAmCIUUvZAZA3zU5poKXUVwJk275ZADvi7QFzUeJkQz7yed6swyyGHZBJYC9jNbtAkHuiMsUHZBR19BHTHK8ZBi9cZB7b5jND8hR92QNHibdwzq9MmwG8Ix4YB6XtqzOZBnh9v7atpTZBUcGXRPKwEv4puGYvjUqi2u1nHbmbpZBmEYQkJMoh2CmPVm0ybUZD`
-    );
-    const data = await response.json();
-    console.log(data);
-    console.log(fbLeadsTarget(data));
-  });
+    const formId = lead.changes[0].value.form_id;
 
-  res.sendStatus(200);
+    const template = await leadFormTemplateModel.findOne({ formId });
+    const user = await userModel.findOne({
+      "connectedForm.formId": formId,
+    });
+
+    if (!template) {
+      return res
+        .status(400)
+        .json({ message: `Форма ${formId} не подключена`, type: "error" });
+    }
+
+    const response = await fetch(
+      `https://graph.facebook.com/v19.0/${lead.changes[0].value.leadgen_id}?access_token=${user.fb_token}`
+    );
+
+    const data = await response.json();
+
+    if (data.error) {
+      console.error("Ошибка при получении лида:", data.error);
+      return res.status(400).json({
+        message: "Ошибка при получении лида из Facebook",
+        details: data.error,
+        type: "error",
+      });
+    }
+
+    if (template.type === "GOOGLESheets") {
+      const validLead = fbLeadsTarget(data);
+      const valuesArray = Object.values(validLead);
+      valuesArray.push(template.adset);
+      await appendToSheet(valuesArray, template.sheet, template.tableId);
+      return res
+        .status(200)
+        .json({ message: "Лид отправлен в таблицу", type: "success" });
+    }
+  });
 };
 
 export const getLongLivedToken = async (req, res) => {
   const { fb_token, authToken } = req.body;
-
-  console.log(process.env.APP_ID, process.env.FB_CLIENT_SECRET);
 
   try {
     const params = new URLSearchParams({
@@ -63,10 +86,42 @@ export const getLongLivedToken = async (req, res) => {
     }
 
     if (data.access_token) {
-      userModel.findOne({ authToken }, { fb_token }, { new: true });
+      await userModel.findOneAndUpdate(
+        { authToken },
+        { fb_token: data.access_token },
+        { new: true }
+      );
     }
 
     return res.status(200).json(data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err.message, type: "error" });
+  }
+};
+
+export const saveLeadFormTemplate = async (req, res) => {
+  const { formId, userId } = req.body;
+
+  try {
+    const template = await leadFormTemplateModel.findOne({ formId });
+
+    if (template) {
+      return res
+        .status(400)
+        .json({ message: "Форма уже подключнеа", type: "error" });
+    }
+
+    await leadFormTemplateModel({ ...req.body }).save();
+
+    await userModel.updateOne(
+      { _id: userId },
+      { $push: { connectedForm: { ...req.body } } }
+    );
+
+    return res
+      .status(200)
+      .json({ message: "Шаблон формы сохранен", type: "success" });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: err.message, type: "error" });

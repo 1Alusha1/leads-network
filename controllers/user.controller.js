@@ -105,7 +105,7 @@ export const checkAuth = async (req, res) => {
 
     if (user) {
       if (user.authToken === token) {
-        return res.status(200).json({ isAuth: true });
+        return res.status(200).json({ isAuth: true, id: decodeData.id });
       } else {
         return res.status(200).json({ isAuth: false });
       }

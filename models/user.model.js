@@ -7,7 +7,7 @@ const UserSchema = new Schema({
   password: String,
   fb_token: String,
   authToken: String,
-  connectedForm: Object,
+  connectedForm: Array,
 });
 
 export default mongoose.model("User", UserSchema);
