@@ -12,3 +12,4 @@ const LeadFormTemplateModel = new Schema({
 });
 
 export default mongoose.model("LeadFormTemplate", LeadFormTemplateModel);
+  

@@ -20,7 +20,7 @@ export const validationHook = (req, res) => {
 
 export const sendDataToCRM = (req, res) => {
   const { entry } = req.body;
-
+  console.log(JSON.stringify(entry, null, 2));
   entry.forEach(async (lead) => {
     const formId = lead.changes[0].value.form_id;
 
