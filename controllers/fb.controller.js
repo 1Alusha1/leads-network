@@ -18,10 +18,10 @@ export const validationHook = (req, res) => {
   }
 };
 
-export const sendDataToCRM = (req, res) => {
+export const sendDataToCRM = async (req, res) => {
   const { entry } = req.body;
-  console.log(JSON.stringify(entry, null, 2));
-  entry.forEach(async (lead) => {
+
+  for (const lead of entry) {
     const formId = lead.changes[0].value.form_id;
 
     const template = await leadFormTemplateModel.findOne({ formId });
@@ -30,36 +30,36 @@ export const sendDataToCRM = (req, res) => {
     });
 
     if (!template) {
-      return res
-        .status(400)
-        .json({ message: `Форма ${formId} не подключена`, type: "error" });
+      console.log(`⛔ Форма ${formId} не подключена`);
+      continue; // не прерываем — просто пропускаем
     }
 
     const response = await fetch(
-      `https://graph.facebook.com/v19.0/${lead.changes[0].value.leadgen_id}?access_token=${user.fb_token}`
+      `https://graph.facebook.com/v19.0/${lead.changes[0].value.leadgen_id}?access_token=${user?.fb_token}`
     );
 
     const data = await response.json();
 
+    console.log(data);
+
     if (data.error) {
-      console.error("Ошибка при получении лида:", data.error);
-      return res.status(400).json({
-        message: "Ошибка при получении лида из Facebook",
-        details: data.error,
-        type: "error",
-      });
+      console.error("❌ Ошибка при получении лида:", data.error);
+      continue;
     }
 
     if (template.type === "GOOGLESheets") {
       const validLead = fbLeadsTarget(data);
       const valuesArray = Object.values(validLead);
+      console.log(validLead);
       valuesArray.push(template.adset);
+
       await appendToSheet(valuesArray, template.sheet, template.tableId);
-      return res
-        .status(200)
-        .json({ message: "Лид отправлен в таблицу", type: "success" });
+      console.log("✅ Лид отправлен:", valuesArray);
     }
-  });
+  }
+
+  // ВАЖНО: Facebook ждет только 200 OK. Ответ один на все entry
+  return res.sendStatus(200);
 };
 
 export const getLongLivedToken = async (req, res) => {

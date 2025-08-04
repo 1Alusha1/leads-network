@@ -49,7 +49,7 @@ export const uploadLeadsfile = (req, res) => {
           full_name: `${firstName} ${lastName}`,
           phone,
           email,
-          answers: answers.join(""),
+          description: answers.join(""),
           geo: getCountryISO(phone, phonesData).toUpperCase(),
           id,
         };

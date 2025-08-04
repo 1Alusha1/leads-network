@@ -20,6 +20,11 @@ app.use(
 );
 app.use(express.json());
 
+app.use((req, res, next) => {
+  res.setHeader("ngrok-skip-browser-warning", "true");
+  next();
+});
+
 app.use("/", recordRoute);
 app.use("/fb", fbRoute);
 app.use("/tt", ttRoute);

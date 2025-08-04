@@ -72,6 +72,7 @@ export const fbLeadsTarget = (lead) => {
       ""
     ),
     email: getFieldValueByKeywords(lead, FIELD_KEYWORDS.email),
+    answers: extractAnswers(lead),
   };
   return leadData;
 };
