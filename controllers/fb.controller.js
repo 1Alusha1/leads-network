@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
-import { fbLeadsTarget } from "../utils/parseLead.js";
+import { fbLeadsCrm, fbLeadsTarget } from "../utils/parseLead.js";
 import userModel from "../models/user.model.js";
-import leadFormTemplateModel from "../models/leadFormTemplate.model.js";
+import leadFormTemplateModel from "../models/formTemplate.model.js";
 import appendToSheet from "../utils/appendToSheet.js";
 dotenv.config();
 
@@ -50,11 +50,37 @@ export const sendDataToCRM = async (req, res) => {
     if (template.type === "GOOGLESheets") {
       const validLead = fbLeadsTarget(data);
       const valuesArray = Object.values(validLead);
-      console.log(validLead);
       valuesArray.push(template.adset);
 
       await appendToSheet(valuesArray, template.sheet, template.tableId);
       console.log("✅ Лид отправлен:", valuesArray);
+    }
+
+    if (template.type === "CRM") {
+      const validLead = fbLeadsCrm(data, template);
+
+      const formBody = new URLSearchParams(validLead).toString();
+
+      try {
+        const response = await fetch(procces.env.CRM_URI, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Accept: "application/json",
+          },
+          body: formBody,
+        });
+
+        const result = await response.json();
+
+        if (response.status === 422) {
+          console.error("❌ Ошибка при отправке лида:", result);
+        } else {
+          console.log("✅ Лид отправлен в CRM:", result);
+        }
+      } catch (err) {
+        console.error("❌ Ошибка сети при отправке лида:", err.message);
+      }
     }
   }
 

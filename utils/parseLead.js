@@ -1,3 +1,7 @@
+import { getCountryISO } from "./getCountryIso.js";
+import getRandomIpByCountry from "./getRandomIpByCountry.js";
+import phonesData from "./utilsData/phonesData.js";
+
 const FIELD_KEYWORDS = {
   full_name: [
     "full name",
@@ -9,6 +13,7 @@ const FIELD_KEYWORDS = {
     "नाम",
     "اسم",
     "שם",
+    "nome_e_cognome",
   ],
   phone: [
     "phone",
@@ -18,6 +23,7 @@ const FIELD_KEYWORDS = {
     "מספר_טלפון",
     "telefono",
     "telefonnummer",
+    "numero_di_telefono",
     "телефон",
     "फ़ोन",
     "هاتف",
@@ -42,15 +48,16 @@ function normalize(str) {
     .replace(/["'“”‘’«»]/g, "") // убираем кавычки
     .trim();
 }
+
 function extractAnswers(lead) {
-  const allKeywords = [
+  const usedKeywords = [
     ...FIELD_KEYWORDS.full_name,
     ...FIELD_KEYWORDS.phone,
     ...FIELD_KEYWORDS.email,
   ].map(normalize);
 
   return lead.field_data
-    .filter((f) => !allKeywords.some((k) => normalize(f.name).includes(k)))
+    .filter((f) => !usedKeywords.includes(normalize(f.name)))
     .flatMap((f) => f.values)
     .map((val) => val.replace(/_/g, " "))
     .join("; ");
@@ -58,10 +65,10 @@ function extractAnswers(lead) {
 
 function getFieldValueByKeywords(lead, keywords) {
   const normalizedKeywords = keywords.map(normalize);
-  const match = lead.field_data.find((f) =>
-    normalizedKeywords.some((k) => normalize(f.name).includes(k))
+  return (
+    lead.field_data.find((f) => normalizedKeywords.includes(normalize(f.name)))
+      ?.values?.[0] || ""
   );
-  return match?.values?.[0] || "";
 }
 
 export const fbLeadsTarget = (lead) => {
@@ -77,23 +84,26 @@ export const fbLeadsTarget = (lead) => {
   return leadData;
 };
 
-export const fbLeadsCrm = (leads, isoCode, offer, aff, trafficSource) => {
-  const leadData = leads.map((lead) => {
-    return {
-      full_name: getFieldValueByKeywords(lead, FIELD_KEYWORDS.full_name),
-      phone: getFieldValueByKeywords(lead, FIELD_KEYWORDS.phone).replace(
-        /\s+/g,
-        ""
-      ),
-      email: getFieldValueByKeywords(lead, FIELD_KEYWORDS.email),
-      answers: extractAnswers(lead),
-      country: isoCode,
-      landing: offer,
-      landing_name: offer,
-      ip: getRandomIpByCountry(isoCode),
-      user_id: aff,
-      source: trafficSource,
-    };
-  });
+export const fbLeadsCrm = (lead, template) => {
+  const phone = getFieldValueByKeywords(lead, FIELD_KEYWORDS.phone).replace(
+    /\s+/g,
+    ""
+  );
+  const isoCode = getCountryISO(phone, phonesData);
+  const leadData = {
+    full_name: getFieldValueByKeywords(lead, FIELD_KEYWORDS.full_name),
+    phone: getFieldValueByKeywords(lead, FIELD_KEYWORDS.phone).replace(
+      /\s+/g,
+      ""
+    ),
+    email: getFieldValueByKeywords(lead, FIELD_KEYWORDS.email),
+    description: extractAnswers(lead),
+    country: isoCode,
+    landing: template.landing,
+    landing_name: template.landing_name,
+    ip: getRandomIpByCountry(isoCode),
+    user_id: template.user_id,
+    source: template.source,
+  };
   return leadData;
 };

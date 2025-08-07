@@ -6,8 +6,11 @@ import fbRoute from "./routes/fb.route.js";
 import ttRoute from "./routes/tt.route.js";
 import ktRoute from "./routes/kt.route.js";
 import userRoute from "./routes/user.route.js";
+import formTemplate from "./routes/formTemplate.route.js";
 import fileUpload from "express-fileupload";
 import cors from "cors";
+import { getCountryISO } from "./utils/getCountryIso.js";
+import phonesData from "./utils/utilsData/phonesData.js";
 
 dotenv.config();
 const app = express();
@@ -30,6 +33,7 @@ app.use("/fb", fbRoute);
 app.use("/tt", ttRoute);
 app.use("/kt", ktRoute);
 app.use("/user", userRoute);
+app.use("/template", formTemplate);
 
 app.get("/", (req, res) => {
   res.send("hello");
