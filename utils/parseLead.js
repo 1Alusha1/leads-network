@@ -51,10 +51,12 @@ function normalize(str) {
 
 function extractAnswers(lead) {
   const usedKeywords = [
-    ...FIELD_KEYWORDS.full_name,
-    ...FIELD_KEYWORDS.phone,
-    ...FIELD_KEYWORDS.email,
+    ...FIELD_KEYWORDS.full_name.toLowerCase(),
+    ...FIELD_KEYWORDS.phone.toLowerCase(),
+    ...FIELD_KEYWORDS.email.toLowerCase(),
   ].map(normalize);
+
+
 
   return lead.field_data
     .filter((f) => !usedKeywords.includes(normalize(f.name)))
@@ -73,12 +75,12 @@ function getFieldValueByKeywords(lead, keywords) {
 
 export const fbLeadsTarget = (lead) => {
   const leadData = {
-    full_name: getFieldValueByKeywords(lead, FIELD_KEYWORDS.full_name),
-    phone: getFieldValueByKeywords(lead, FIELD_KEYWORDS.phone).replace(
+    full_name: getFieldValueByKeywords(lead, FIELD_KEYWORDS.full_name.toLowerCase()),
+    phone: getFieldValueByKeywords(lead, FIELD_KEYWORDS.phone.toLowerCase()).replace(
       /\s+/g,
       ""
     ),
-    email: getFieldValueByKeywords(lead, FIELD_KEYWORDS.email),
+    email: getFieldValueByKeywords(lead, FIELD_KEYWORDS.email.toLowerCase()),
     answers: extractAnswers(lead),
   };
   return leadData;
