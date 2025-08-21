@@ -40,7 +40,7 @@ export const sendDataToCRM = async (req, res) => {
 
     const data = await response.json();
 
-    console.log(data);
+    console.log("📥 Получен лид:", data);
 
     if (data.error) {
       console.error("❌ Ошибка при получении лида:", data.error);
@@ -62,7 +62,7 @@ export const sendDataToCRM = async (req, res) => {
       const formBody = new URLSearchParams(validLead).toString();
 
       try {
-        const response = await fetch(procces.env.CRM_URI, {
+        const response = await fetch(process.env.CRM_URI, {
           method: "POST",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
