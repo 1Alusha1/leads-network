@@ -3,6 +3,8 @@ import { fbLeadsCrm, fbLeadsTarget } from "../utils/parseLead.js";
 import userModel from "../models/user.model.js";
 import leadFormTemplateModel from "../models/formTemplate.model.js";
 import appendToSheet from "../utils/appendToSheet.js";
+import sendLogToChat from "../utils/sendLogToChat.js";
+
 dotenv.config();
 
 export const validationHook = (req, res) => {
@@ -74,9 +76,27 @@ export const sendDataToCRM = async (req, res) => {
         const result = await response.json();
 
         if (response.status === 422) {
-          console.error("❌ Ошибка при отправке лида:", result);
+          sendLogToChat(
+            process.env.BOT_LOG_TOKEN,
+            "-1002534133157",
+            "/leadformhook ❌ Ошибка при отправке лида:",
+            {
+              result,
+              body: formBody,
+              time: format("dd-MM-yyyy, hh:mm"),
+            }
+          );
         } else {
-          console.log("✅ Лид отправлен в CRM:", result);
+          sendLogToChat(
+            process.env.BOT_LOG_TOKEN,
+            "-1002534133157",
+            "/leadformhook ✅ Лид отправлен в CRM:",
+            {
+              result,
+              body: formBody,
+              time: format("dd-MM-yyyy, hh:mm"),
+            }
+          );
         }
       } catch (err) {
         console.error("❌ Ошибка сети при отправке лида:", err.message);
