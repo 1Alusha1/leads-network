@@ -5,6 +5,7 @@ import phonesData from "./utilsData/phonesData.js";
 const FIELD_KEYWORDS = {
   full_name: [
     "full name",
+    "Full name",
     "name",
     "fullname",
     "nombre",
@@ -17,6 +18,7 @@ const FIELD_KEYWORDS = {
   ],
   phone: [
     "phone",
+    "Phone number",
     "tel",
     "mobile",
     "מספר טלפון",
@@ -30,6 +32,7 @@ const FIELD_KEYWORDS = {
   ],
   email: [
     "email",
+    "Email",
     "e-mail",
     "correo",
     'דוא"ל',
@@ -75,12 +78,12 @@ function getFieldValueByKeywords(lead, keywords) {
 
 export const fbLeadsTarget = (lead) => {
   const leadData = {
-    full_name: getFieldValueByKeywords(lead, FIELD_KEYWORDS.full_name.toLowerCase()),
-    phone: getFieldValueByKeywords(lead, FIELD_KEYWORDS.phone.toLowerCase()).replace(
+    full_name: getFieldValueByKeywords(lead, FIELD_KEYWORDS.full_name),
+    phone: getFieldValueByKeywords(lead, FIELD_KEYWORDS.phone).replace(
       /\s+/g,
       ""
     ),
-    email: getFieldValueByKeywords(lead, FIELD_KEYWORDS.email.toLowerCase()),
+    email: getFieldValueByKeywords(lead, FIELD_KEYWORDS.email),
     answers: extractAnswers(lead),
   };
   return leadData;
