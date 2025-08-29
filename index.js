@@ -7,10 +7,9 @@ import ttRoute from "./routes/tt.route.js";
 import ktRoute from "./routes/kt.route.js";
 import userRoute from "./routes/user.route.js";
 import formTemplate from "./routes/formTemplate.route.js";
+import btqFinance from "./routes/btqFinance.route.js";
 import fileUpload from "express-fileupload";
 import cors from "cors";
-import { getCountryISO } from "./utils/getCountryIso.js";
-import phonesData from "./utils/utilsData/phonesData.js";
 
 dotenv.config();
 const app = express();
@@ -34,6 +33,7 @@ app.use("/tt", ttRoute);
 app.use("/kt", ktRoute);
 app.use("/user", userRoute);
 app.use("/template", formTemplate);
+app.use("/btqFinance", btqFinance);
 
 app.get("/", (req, res) => {
   res.send("hello");
@@ -44,5 +44,5 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));
