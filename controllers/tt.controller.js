@@ -19,7 +19,6 @@ export const uploadLeadsfile = (req, res) => {
       const workSheet = workBook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(workSheet);
       const systemFields = [
-        "created_time",
         "ad_id",
         "ad_name",
         "adgroup_id",
