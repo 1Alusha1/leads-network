@@ -37,6 +37,7 @@ export const uploadLeadsfile = (req, res) => {
         const lastName = row["Last name"] || "";
         const phone = row["Phone number"] || "";
         const id = row["lead_id"] || "";
+        const created_time = row["created_time"] || "";
 
         const customFields = Object.entries(row).filter(
           ([key]) => !systemFields.includes(key) && !contactFields.includes(key)
@@ -49,8 +50,9 @@ export const uploadLeadsfile = (req, res) => {
           phone,
           email,
           description: answers.join(""),
-          geo: getCountryISO(phone, phonesData).toUpperCase(),
+          country: getCountryISO(phone, phonesData).toUpperCase(),
           id,
+          created_time,
         };
       });
       result.push(...parsed);
