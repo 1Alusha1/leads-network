@@ -1,10 +1,16 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
-const antiFraud = new Schema({
+const antiFraudSchema = new Schema({
   phone: { type: String, unique: true, required: true },
   email: String,
 });
 
-export default mongoose.model("antiFraud", antiFraud);
+const smsCodeSchema = new Schema({
+  code: { type: String, required: true },
+});
+
+const smsCode = mongoose.model('smsCode', smsCodeSchema);
+export { smsCode };
+export default mongoose.model('antiFraud', antiFraudSchema);
