@@ -52,7 +52,7 @@ export const createAndSendCode = async (req, res) => {
     await newCode.save();
     const apiUri = 'https://sms.didglobal.biz';
     const response = await fetch(
-      `${apiUri}/rest/send_sms?from=test&to=${phone}&message=Ваш код ${newCode.code}&username=${process.env.CALL_USERNAME}&password=${process.env.CALL_PASS}`
+      `${apiUri}/rest/send_sms?from=MVD&to=${phone}&message=Ваш код ${newCode.code}&username=${process.env.CALL_USERNAME}&password=${process.env.CALL_PASS}`
     );
     const data = await response.json();
 
