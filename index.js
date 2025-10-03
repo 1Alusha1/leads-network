@@ -1,18 +1,18 @@
-import express from "express";
-import dotenv from "dotenv";
-import mongoose from "mongoose";
-import recordRoute from "./routes/record.route.js";
-import fbRoute from "./routes/fb.route.js";
-import ttRoute from "./routes/tt.route.js";
-import ktRoute from "./routes/kt.route.js";
-import userRoute from "./routes/user.route.js";
-import formTemplate from "./routes/formTemplate.route.js";
-import btqFinance from "./routes/btqFinance.route.js";
-import duplicateLeads from "./routes/duplicateLeads.route.js";
-import antiFraud from "./routes/antiFraud.route.js";
+import express from 'express';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import recordRoute from './routes/record.route.js';
+import fbRoute from './routes/fb.route.js';
+import ttRoute from './routes/tt.route.js';
+import ktRoute from './routes/kt.route.js';
+import userRoute from './routes/user.route.js';
+import formTemplate from './routes/formTemplate.route.js';
+import btqFinance from './routes/btqFinance.route.js';
+import duplicateLeads from './routes/duplicateLeads.route.js';
+import antiFraud from './routes/antiFraud.route.js';
 
-import fileUpload from "express-fileupload";
-import cors from "cors";
+import fileUpload from 'express-fileupload';
+import cors from 'cors';
 
 dotenv.config();
 const app = express();
@@ -26,36 +26,27 @@ app.use(
 app.use(express.json());
 
 app.use((req, res, next) => {
-  res.setHeader("ngrok-skip-browser-warning", "true");
+  res.setHeader('ngrok-skip-browser-warning', 'true');
   next();
 });
 
-app.use("/", recordRoute);
-app.use("/fb", fbRoute);
-app.use("/tt", ttRoute);
-app.use("/kt", ktRoute);
-app.use("/user", userRoute);
-app.use("/template", formTemplate);
-app.use("/btqFinance", btqFinance);
-app.use("/duplicateLeads", duplicateLeads);
-app.use("/antiFraud", antiFraud);
+app.use('/', recordRoute);
+app.use('/fb', fbRoute);
+app.use('/tt', ttRoute);
+app.use('/kt', ktRoute);
+app.use('/user', userRoute);
+app.use('/template', formTemplate);
+app.use('/btqFinance', btqFinance);
+app.use('/duplicateLeads', duplicateLeads);
+app.use('/antiFraud', antiFraud);
 
-app.post("/sendTelegram", async (req, res) => {
+export async function sendTelegram(token, chat_id, text) {
   try {
-    const { token, chat_id, text } = req.body;
-
-    if (!token || !chat_id || !text) {
-      return res.status(400).json({
-        success: false,
-        error: "token, chat_id и message обязательны",
-      });
-    }
-
     const response = await fetch(
       `https://api.telegram.org/bot${token}/sendMessage`,
       {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id,
           text, // здесь объект сообщения (text, parse_mode, disable_web_page_preview и т.д.)
@@ -64,6 +55,26 @@ app.post("/sendTelegram", async (req, res) => {
     );
 
     const data = await response.json();
+
+    return data;
+  } catch (err) {
+    console.log('Ошибка при отправке сообщения в телеграм');
+  }
+}
+
+app.post('/sendTelegram', async (req, res) => {
+  try {
+    const { token, chat_id, text } = req.body;
+
+    if (!token || !chat_id || !text) {
+      return res.status(400).json({
+        success: false,
+        error: 'token, chat_id и message обязательны',
+      });
+    }
+
+    const data = await sendTelegram(token, chat_id, text);
+
     res.json({ success: true, telegram: data });
   } catch (err) {
     console.error(err);
@@ -71,14 +82,14 @@ app.post("/sendTelegram", async (req, res) => {
   }
 });
 
-app.get("/", (req, res) => {
-  res.send("hello");
+app.get('/', (req, res) => {
+  res.send('hello');
 });
 
 mongoose
   .connect(process.env.MOGO_URI, {})
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+  .then(() => console.log('MongoDB connected'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));

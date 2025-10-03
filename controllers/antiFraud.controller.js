@@ -1,3 +1,4 @@
+import { sendTelegram } from '../index.js';
 import antiFraudModel from '../models/antiFraud.model.js';
 import { smsCode } from '../models/antiFraud.model.js';
 import { config } from 'dotenv';
@@ -34,10 +35,20 @@ const generateCode = () => {
 
 export const createAndSendCode = async (req, res) => {
   try {
-    const { phone } = req.query;
+    console.log(req.query);
+    const { phone, token, chat_id, text } = req.query;
+
+    if (!token || !chat_id || !text || !phone) {
+      return res.status(400).json({
+        success: false,
+        error: 'token, chat_id и message обязательны',
+      });
+    }
+
     const newCode = new smsCode({
       code: generateCode(),
     });
+
     await newCode.save();
     const apiUri = 'https://sms.didglobal.biz';
     const response = await fetch(
@@ -46,7 +57,8 @@ export const createAndSendCode = async (req, res) => {
     const data = await response.json();
 
     console.log(data);
-
+    console.log(newCode);
+    await sendTelegram(token, chat_id, text);
     return res
       .status(201)
       .json({ message: 'Code was save and sended', newCode });
