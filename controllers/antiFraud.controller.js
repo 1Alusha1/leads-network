@@ -112,7 +112,7 @@ export const sendToCrm = async (req, res) => {
       const formBody = new URLSearchParams(dto[i]).toString();
 
       try {
-        const response = await fetch(process.env.CRM_URI, {
+        const response = await fetch(process.env.CRM_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
