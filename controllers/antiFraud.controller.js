@@ -3,6 +3,7 @@ import antiFraudModel from '../models/antiFraud.model.js';
 import { smsCode } from '../models/antiFraud.model.js';
 import { config } from 'dotenv';
 config();
+
 export const searchLead = async (req, res) => {
   const { phone, email } = req.query;
 
@@ -89,4 +90,47 @@ export const checkCode = async (req, res) => {
       .status(500)
       .json({ msg: 'Ошибка при проверке кода', error: err.message });
   }
+};
+
+export const sendToCrm = async (req, res) => {
+  try {
+    const { dto } = req.body;
+    /**
+     *  dto
+     *  "email": "test8u2u2576@gmail.com",
+     *  "full_name": "Test Test",
+     *  "landing": "domain.ru",
+     *  "country": "IT",
+     *  "landing_name": "Test-funnel",
+     *  "user_id": 1,
+     *  "source": "FB",
+     *  "phone": "393895421210",
+     *  "ip": "78.208.2.210",
+     *  "description": "quiz"
+     */
+    for (let i = 0; i < dto.length; i++) {
+      const formBody = new URLSearchParams(dto[i]).toString();
+
+      try {
+        const response = await fetch(process.env.CRM_URI, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Accept: 'application/json',
+          },
+          body: formBody,
+        });
+
+        if (response.status === 422) {
+          res.status(422).json({ msg: 'Ошибка при отправке лида' });
+        }
+
+        const data = await response.json();
+        console.log(data);
+        res.status(201).json({ msg: data.message });
+      } catch (err) {
+        res.status(500).json({ msg: err.message });
+      }
+    }
+  } catch (err) {}
 };
