@@ -1,4 +1,4 @@
-import duplicateLeadsModel from "../models/duplicateLeads.model.js";
+import duplicateLeadsModel from '../models/duplicateLeads.model.js';
 
 export const uploadLeads = async (req, res) => {
   try {
@@ -7,11 +7,11 @@ export const uploadLeads = async (req, res) => {
     if (!Array.isArray(leads)) {
       return res
         .status(400)
-        .json({ message: "leads должен быть массивом", type: "error" });
+        .json({ message: 'leads должен быть массивом', type: 'error' });
     }
 
     // телефоны из базы
-    const dbLeads = await duplicateLeadsModel.find({}, "phone");
+    const dbLeads = await duplicateLeadsModel.find({}, 'phone');
     const dbPhones = dbLeads.map((l) => l.phone);
 
     // фильтруем только новые
@@ -20,49 +20,53 @@ export const uploadLeads = async (req, res) => {
     if (newLeads.length === 0) {
       return res
         .status(200)
-        .json({ message: "Новых лидов нет", type: "success" });
+        .json({ message: 'Новых лидов нет', type: 'success' });
     }
 
     await duplicateLeadsModel.insertMany(newLeads);
 
     return res.status(200).json({
-      message: "Лиды сохранены",
-      type: "success",
+      message: 'Лиды сохранены',
+      type: 'success',
       saved: newLeads.length,
     });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: err.message, type: "error" });
+    res.status(500).json({ message: err.message, type: 'error' });
   }
 };
 
-export const fileterdLeads = async (req, res) => {
+export const filteredLeads = async (req, res) => {
   try {
     const { leads = [] } = req.body;
 
     if (!Array.isArray(leads)) {
       return res.status(400).json({
         message: "Поле 'leads' должно быть массивом объектов",
-        type: "error",
+        type: 'error',
       });
     }
 
     // вытаскиваем все телефоны из базы
-    const dbLeads = await duplicateLeadsModel.find({}, "phone");
+    const dbLeads = await duplicateLeadsModel.find({}, 'phone');
     const dbPhones = dbLeads.map((l) => l.phone);
 
-    // фильтруем: оставляем только новые лиды
-    const newLeads = leads.filter((lead) => !dbPhones.includes(lead.phone));
+    // мапим все лиды, помечая дубли
+    const processedLeads = leads.map((lead) => ({
+      ...lead,
+      isDuplicate: dbPhones.includes(lead.phone),
+    }));
 
-    // возвращаем только новых лидов
     return res.status(200).json({
-      message: "Лиды отфильтрованы",
-      type: "success",
-      data: newLeads,
-      count: newLeads.length,
+      message: 'Лиды обработаны',
+      type: 'success',
+      data: processedLeads,
+      count: processedLeads.length,
+      duplicatesCount: processedLeads.filter((l) => l.isDuplicate).length,
+      newCount: processedLeads.filter((l) => !l.isDuplicate).length,
     });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: err.message, type: "error" });
+    res.status(500).json({ message: err.message, type: 'error' });
   }
 };
