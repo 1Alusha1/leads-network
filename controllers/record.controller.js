@@ -1,3 +1,4 @@
+import { sendTelegram } from "../index.js";
 import hashModel from "../models/hash.model.js";
 import tgUserModel from "../models/tguser.model.js";
 import waUserModel from "../models/wauser.model.js";
@@ -232,7 +233,7 @@ export const record = async (req, res) => {
       geo,
       format("dd-MM-yyyy, hh:mm")
     );
-
+    console.log(recordData);
     appendToSheet(recordData, sheet, tableId);
     res.status(200).send("✅ Записано в таблицу");
   } catch (err) {
@@ -248,5 +249,33 @@ export const record = async (req, res) => {
     );
     console.error("❌ Ошибка в маршруте:", err);
     res.status(500).send("❌ Ошибка при записи");
+  }
+};
+
+export const uniqueRecord = async (req, res) => {
+  try {
+    const body = req.body;
+    const { tableId, sheet, chatId, ...data } = body;
+
+    const isArray = Array.isArray(body);
+    const recordData = isArray ? body : [data];
+
+    const allMessages = recordData
+      .map((item, index) => {
+        const message = Object.entries(item)
+          .map(([key, value]) => `• ${key}: ${value}`)
+          .join("\n");
+        return `#${index + 1}\n${message}`;
+      })
+      .join("\n\n");
+
+    const fullMessage = `🆕 Новые заявки:\n\n${allMessages}\n\n🕒 ${format("dd-MM-yyyy, hh:mm")}`;
+    await appendToSheet(Object.values(isArray ? body[0] : data), sheet, tableId);
+    await sendTelegram(process.env.BOT_LOG_TOKEN, chatId, fullMessage);
+
+    res.status(200).json({ success: true, message: "Уведомление отправлено" });
+  } catch (err) {
+    console.error("❌ Ошибка:", err);
+    res.status(500).json({ success: false, error: err.message });
   }
 };
