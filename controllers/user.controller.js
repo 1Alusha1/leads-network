@@ -117,3 +117,29 @@ export const checkAuth = async (req, res) => {
     res.json({ auth: false });
   }
 };
+
+export const getUser = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const { _id, chat_id } = await userModel.findOne({ _id: userId });
+
+    if (!chat_id) {
+      return res.status(400).json({
+        message: 'Пользователь не подключен к боту',
+        error: null,
+        type: 'error',
+      });
+    }
+
+    return res.status(200).json({
+      data: { _id, chat_id },
+      message: 'Данные пользователя получены!',
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: 'Ошибка во время авторизации',
+      error: err.message,
+      type: 'error',
+    });
+  }
+};

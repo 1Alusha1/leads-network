@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
@@ -8,6 +8,7 @@ const UserSchema = new Schema({
   fb_token: String,
   authToken: String,
   connectedForm: Array,
+  chat_id: String,
 });
 
-export default mongoose.model("User", UserSchema);
+export default mongoose.model('User', UserSchema);

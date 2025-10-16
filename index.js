@@ -10,9 +10,11 @@ import formTemplate from './routes/formTemplate.route.js';
 import btqFinance from './routes/btqFinance.route.js';
 import duplicateLeads from './routes/duplicateLeads.route.js';
 import antiFraud from './routes/antiFraud.route.js';
+import linkMonitor from './routes/linkmonitor.route.js';
 
 import fileUpload from 'express-fileupload';
 import cors from 'cors';
+import { startCron } from './cron/links.js';
 
 dotenv.config();
 const app = express();
@@ -39,6 +41,7 @@ app.use('/template', formTemplate);
 app.use('/btqFinance', btqFinance);
 app.use('/duplicateLeads', duplicateLeads);
 app.use('/antiFraud', antiFraud);
+app.use('/link-monitor', linkMonitor);
 
 export async function sendTelegram(token, chat_id, text) {
   try {
@@ -49,7 +52,7 @@ export async function sendTelegram(token, chat_id, text) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id,
-          text, // здесь объект сообщения (text, parse_mode, disable_web_page_preview и т.д.)
+          text,
         }),
       }
     );
@@ -82,9 +85,11 @@ app.post('/sendTelegram', async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
   res.send('hello');
 });
+
+startCron();
 
 mongoose
   .connect(process.env.MOGO_URI, {})
