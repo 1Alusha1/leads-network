@@ -3,7 +3,6 @@ config();
 
 export const getKeitaroLeads = async (adsetNames, fbData) => {
   const leadsMap = {};
-  
 
   for (const adset of adsetNames) {
     // Находим соответствующий объект из fbData для дат
@@ -39,13 +38,18 @@ export const getKeitaroLeads = async (adsetNames, fbData) => {
       body: JSON.stringify(body),
     });
 
-    const data = await res.json();
-    console.log(data)
-    const rows = data.rows || [];
-    leadsMap[adset] = rows.reduce(
-      (sum, row) => sum + parseInt(row.conversions || 0),
-      0
-    );
+    const text = await res.text();
+
+    try {
+      const data = JSON.parse(text);
+      const rows = data.rows || [];
+      leadsMap[adset] = rows.reduce(
+        (sum, row) => sum + parseInt(row.conversions || 0),
+        0
+      );
+    } catch (err) {
+      console.log(err.message);
+    }
   }
 
   return leadsMap;
