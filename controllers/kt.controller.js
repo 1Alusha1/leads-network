@@ -4,7 +4,7 @@ dotenv.config();
 export const getOffers = async (req, res) => {
   try {
     const response = await fetch(
-      `${process.env.KEITARO_HOST}/api/admin_api/v1/offers`,
+      `${process.env.KEITARO_HOST}/offers`,
       {
         headers: {
           "Api-Key": process.env.KEITARO_API_KEY,
